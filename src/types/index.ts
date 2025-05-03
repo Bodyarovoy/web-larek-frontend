@@ -4,7 +4,7 @@ export interface IProductItem {
     image: string;
     title: string;
     category: string;
-    price: number; 
+    price: number | null; 
 }
 
 export interface IProductList {
@@ -20,12 +20,11 @@ export interface IForm {
     email: string;
     phone: string;
     total: number;
-    items: IProductItem[];
 
     choosePaymentOption(option: string): void;
     checkCheckoutValidation(data: Record<keyof TCheckoutModal, string>): boolean;
     checkContactsValidation(data: Record<keyof TContactsModal, string>): boolean;
-    clearCart(): void;
+    sendOrderToServer(items: IProductItem[], total: number): {id: string, total: number};
 }
 
 export interface ICart {
@@ -36,6 +35,7 @@ export interface ICart {
     removeItemFromCart(itemId: string, payload: Function | null ): void;
     countTotal(): number;
     proceedToCheckout(): void;
+    clearCart(): void;
 }
 
 export type TCheckoutModal = Pick<IForm, 'paymentOption' | 'shippingAddress'>;

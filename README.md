@@ -4,18 +4,18 @@
 
 Структура проекта:
 
-- src/ — исходные файлы проекта
-- src/components/ — папка с JS компонентами
-- src/components/base/ — папка с базовым кодом
+- src/ - исходные файлы проекта
+- src/components/ - папка с JS компонентами
+- src/components/base/ - папка с базовым кодом
 
 Важные файлы:
 
-- src/pages/index.html — HTML-файл главной страницы
-- src/types/index.ts — файл с типами
-- src/index.ts — точка входа приложения
-- src/scss/styles.scss — корневой файл стилей
-- src/utils/constants.ts — файл с константами
-- src/utils/utils.ts — файл с утилитами
+- src/pages/index.html - HTML-файл главной страницы
+- src/types/index.ts - файл с типами
+- src/index.ts - точка входа приложения
+- src/scss/styles.scss - корневой файл стилей
+- src/utils/constants.ts - файл с константами
+- src/utils/utils.ts - файл с утилитами
 
 ## Установка и запуск
 
@@ -146,24 +146,7 @@ export type TSuccessPurchaseModal = Pick<IOrder, 'total'>;
 
 ### Слой данных
 
-#### Класс IProductItem
-
-Класс отвечает за хранение и логику товаров.\
-Конструктор класса принимает инстант брокера событий\
-В полях класса хранятся следующие данные:
-
-- id: string; - id товара.
-- description: string; - описание товара.
-- image: string; - ссылка на изображение товара.
-- title: string; - название товара.
-- category: string; - категория товара.
-- price: number; - стоимость товара
-- events: IEvents - экземпляр класса `EventEmitter` для инициации событий при изменении данных.
-
-Так же класс предоставляет набор методов для взаимодействия с этими данными.
-а также сеттеры и геттеры для сохранения и получения данных из полей класса
-
-#### Класс IProductList
+#### Класс ProductList
 
 Класс отвечает за хранение списка товаров и отображения попапа с выбранным товаром.\
 Конструктор класса принимает инстант брокера событий\
@@ -178,7 +161,7 @@ export type TSuccessPurchaseModal = Pick<IOrder, 'total'>;
 - getItem(itemId: string): IProductItem; - возвращает товар по его id.
 - а также сеттеры и геттеры для сохранения и получения данных из полей класса
 
-#### Класс IForm
+#### Класс Form
 
 Класс отвечает за хранение и логику информации о данных покупателя и заказе.\
 Конструктор класса принимает инстант брокера событий\
@@ -197,10 +180,10 @@ export type TSuccessPurchaseModal = Pick<IOrder, 'total'>;
 - choosePaymentOption(option: string): void; - позволяет выбрать способ оплаты.
 - checkCheckoutValidation(data: Record<keyof TCheckoutModal, string>): boolean; - проверяет объект с адресом и способом оплаты на валидность.
 - checkContactsValidation(data: Record<keyof TContactsModal, string>): boolean; - проверяет объект с номером телефона и почтой на валидность.
-- clearCart(): void; - очищает корзину после успешной оплаты.
+- sendOrderToServer(items: IProductItem[], total: number): {id: string, total: number} -  получает параметрами список айли и тотал, возвращает объект, который нужен будет для отправки заказа на сервер.
 - а также сеттеры и геттеры для сохранения и получения данных из полей класса
 
-#### Класс ICart
+#### Класс Cart
 
 Класс отвечает за хранение и логику информации о товарах в корзине.\
 Конструктор класса принимает инстант брокера событий\
@@ -216,6 +199,7 @@ export type TSuccessPurchaseModal = Pick<IOrder, 'total'>;
 - removeItemFromCart(itemId: string, payload: Function | null ): void; - убирает товар из корзины.
 - countTotal(): number; - считает общую стоимость всех товаров.
 - proceedToCheckout(): void; - переход на страницу ввода данных для оплаты.
+- clearCart(): void; - очищает корзину после успешной оплаты.
 - а также сеттеры и геттеры для сохранения и получения данных из полей класса
 
 ### Классы представления
@@ -224,89 +208,97 @@ export type TSuccessPurchaseModal = Pick<IOrder, 'total'>;
 
 #### Класс Modal
 
-Реализует модальное окно. Также предоставляет методы `open` и `close` для управления отображением модального окна. Устанавливает слушатели на клавиатуру, для закрытия модального окна по Esc, на клик в оверлей и кнопку-крестик для закрытия попапа.
+Реализует модальное окно. Устанавливает слушатели на клавиатуру, для закрытия модального окна по Esc, на клик в оверлей и кнопку-крестик для закрытия попапа.
 
 - constructor(container: HTMLElement, events: IEvents) Конструктор принимает селектор, по которому в разметке страницы будет идентифицировано модальное окно и экземпляр класса `EventEmitter` для возможности инициации событий.
 
-Поля класса
-
+В полях класса хранятся следующие данные:
 - container: HTMLElement - контейнер с наполнением модального окна
 - events: IEvents - брокер событий
-
-#### Класс ModalProductItem
-
-Расширяет класс Modal. Предназначен для реализации модального окна с карточкой товара.
-
-- addItemToCartButton: HTMLButtonElement - Кнопка добавления товара в корзину.
+- content: HTMLElement - контейнер .modal__content, в который вставляется любое переданное представление.
 
 Методы:
+- setContent(content: HTMLElement): void - вставляет переданный элемент внутрь .modal__content.
+- open(): void - показывает модальное окно.
+- close(): void - закрывает модальное окно.
 
-- setData(itemData: IProductItem): void - отображает информацию о товаре.
+#### Класс ProductItemPreview
 
-#### Класс ModalCart
+Предназначен для реализации модального окна с карточкой товара.
 
-Расширяет класс Modal. Предназначен для реализации модального окна с корзиной.
-
-- proceedToCheckoutButton: HTMLButtonElement - Кнопка перехода на окно со способом оплаты и адресом.
+- container: HTMLElement - контейнер с разметкой карточки товара
+- addItemToCartButton: HTMLButtonElement - Кнопка добавления товара в корзину.
 - removeItemFromCartButton: HTMLButtonElement - Кнопка удаления товара из корзины.
 
-Методы:
 
+Методы:
+- setData(itemData: IProductItem): void - отображает информацию о товаре.
+- render(): HTMLElement - возвращает готовый DOM-элемент корзины с установленными данными.
+
+#### Класс CartPreview
+
+Предназначен для реализации модального окна с корзиной.
+
+- container: HTMLElement - контейнер с разметкой окна с корзиной
+- totalElement: HTMLElement - элемент, отображающий общую сумму всех товаров в корзине.
+- proceedToCheckoutButton: HTMLButtonElement - Кнопка перехода на окно со способом оплаты и адресом.
+
+
+Методы:
 - setValid(isValid: boolean): void - изменяет активность кнопки подтверждения, кнопка неактивна, если в корзине есть бесценный товар.
-- setCartData(setCartData: IForm): void - отображает информацию о товарах в корзине
+- setCartData(items: HTMLElement[]): void - принимает список элементов товаров и заменяет содержимое контейнера корзины.
 - setTotal(total: number): void - отображает общую цену товаров.
+- render(): HTMLElement - возвращает готовый DOM-элемент корзины с установленными данными.
 
-#### Класс ModalCheckout
+#### Класс CheckoutPreview
 
-Расширяет класс Modal. Предназначен для реализации модального окна с выбором метода оплаты и указанием адреса.
+Предназначен для реализации модального окна с выбором метода оплаты и указанием адреса.
 
+- container: HTMLElement - контейнер с разметкой окна с выбором способа оплаты
 - nextButton: HTMLButtonElement - Кнопка перехода на страницу с указанием контактных данных.
-- \_form: HTMLFormElement - элемент формы
+- _form: HTMLFormElement - элемент формы
 - formName: string - значение атрибута name формы
 - inputs: NodeListOf<HTMLInputElement> - коллекция всех полей ввода формы
-- errors: Record<string, HTMLElement> - объект хранящий все элементы для вывода ошибок под полями формы с привязкой к атрибуту name инпутов
+- errors: Record<string, HTMLElement> - объект хранящий все элементы для вывода ошибок.
 
 Методы:
 
 - setValid(isValid: boolean): void - изменяет активность кнопки подтверждения
-- getInputValues(): Record<string, string> - возвращает объект с данными из полей формы, где ключ - name инпута, значение - данные введенные пользователем
 - setInputValues(data: Record<string, string>): void - принимает объект с данными для заполнения полей формы
-- setError(data: { field: string, value: string, validInformation: string }): void - принимает объект с данными для отображения или сокрытия текстов ошибок под полями ввода
-- showInputError (field: string, errorMessage: string): void - отображает полученный текст ошибки под указанным полем ввода
-- hideInputError (field: string): void - очищает текст ошибки под указанным полем ввода
-- close (): void - расширяет родительский метод дополнительно при закрытии очищая поля формы и деактивируя кнопку сохранения
-- get form: HTMLElement - геттер для получения элемента формы
+- setError(message: string): void - отображает строку ошибки в общем контейнере ошибок
+- clearErrors(): void - очищает общее сообщение об ошибке
+- render(): HTMLElement - возвращает готовый DOM-элемент корзины с установленными данными.
 
-#### Класс ModalContact
+#### Класс ContactPreview
 
-Расширяет класс Modal. Предназначен для реализации модального окна с контактами покупателя.
+Предназначен для реализации модального окна с контактами покупателя.
 
+- container: HTMLElement - контейнер с разметкой окна с контактами покупателя.
 - buyButton: HTMLButtonElement - Кнопка перехода на страницу с оплаты и очистки корзины.
-- \_form: HTMLFormElement - элемент формы
+- _form: HTMLFormElement - элемент формы
 - formName: string - значение атрибута name формы
 - inputs: NodeListOf<HTMLInputElement> - коллекция всех полей ввода формы
-- errors: Record<string, HTMLElement> - объект хранящий все элементы для вывода ошибок под полями формы с привязкой к атрибуту name инпутов.
+- errors: Record<string, HTMLElement> - объект хранящий все элементы для вывода ошибок.
 
 Методы:
 
 - setValid(isValid: boolean): void - изменяет активность кнопки подтверждения
-- getInputValues(): Record<string, string> - возвращает объект с данными из полей формы, где ключ - name инпута, значение - данные введенные пользователем
 - setInputValues(data: Record<string, string>): void - принимает объект с данными для заполнения полей формы
-- setError(data: { field: string, value: string, validInformation: string }): void - принимает объект с данными для отображения или сокрытия текстов ошибок под полями ввода
-- showInputError (field: string, errorMessage: string): void - отображает полученный текст ошибки под указанным полем ввода
-- hideInputError (field: string): void - очищает текст ошибки под указанным полем ввода
-- close (): void - расширяет родительский метод дополнительно при закрытии очищая поля формы и деактивируя кнопку сохранения
-- get form: HTMLElement - геттер для получения элемента формы
+- setError(message: string): void - отображает строку ошибки в общем контейнере ошибок
+- clearErrors(): void - очищает общее сообщение об ошибке
+- render(): HTMLElement - возвращает готовый DOM-элемент корзины с установленными данными.
 
-#### Класс ModalSuccessPurchase
+#### Класс SuccessPurchasePreview
 
-Расширяет класс Modal. Предназначен для реализации модального окна с сообщением об успешной покупке.
+Предназначен для реализации модального окна с сообщением об успешной покупке.
 
+- container: HTMLElement - контейнер с разметкой с окна с успешной покупкой.
 - goToItemListButton: HTMLButtonElement - Кнопка перехода на страницу с товарами.
 
 Методы:
 
 - setTotal(total: number): void - отображает общую цену товаров.
+- render(): HTMLElement - возвращает готовый DOM-элемент корзины с установленными данными.
 
 #### Класс Card
 
@@ -320,7 +312,15 @@ export type TSuccessPurchaseModal = Pick<IOrder, 'total'>;
 
 #### Класс CardsContainer
 
-Отвечает за отображение блока с карточками на главной странице. Предоставляет метод `addCard(cardElement: HTMLElement)` для добавления карточек на страницу и сеттер `container` для полного обновления содержимого. В конструктор принимает контейнер, в котором размещаются карточки.
+Отвечает за отображение блока с карточками на главной странице. 
+Используется для отображения массива готовых DOM-элементов карточек.
+
+Поля:
+- container: HTMLElement - DOM-элемент, в который добавляются карточки
+
+Методы:
+
+- render(cards: HTMLElement[]): void = полностью заменяет содержимое контейнера переданным массивом карточек
 
 ### Слой коммуникации
 
