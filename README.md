@@ -198,7 +198,7 @@ export type TSuccessPurchaseModal = Pick<IOrder, 'total'>;
 
 Так же класс предоставляет набор методов для взаимодействия с этими данными.
 
-- setOrderField(field: keyof TOrderForm, value: string) - ////////////
+- setOrderField(field: keyof TOrderForm, value: string) - получает название поля и записывает его значение, после этого вызывает validateOrder
 - validateContacts() - валидирует полу с контактами
 - validateOrder() - валидирует поле с способом оплаты и адресом
 - refreshOrder() - очищает объект с заказом покупателя
