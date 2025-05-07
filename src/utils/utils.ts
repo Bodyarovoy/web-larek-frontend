@@ -25,6 +25,14 @@ export function ensureAllElements<T extends HTMLElement>(selectorElement: Select
     throw new Error(`Unknown selector element`);
 }
 
+export function handlePrice(price: number): string {
+	return new Intl.NumberFormat('ru-RU').format(price);
+}
+
+export function formatNumber(x: number, sep = ' ') {
+	return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, sep);
+}
+
 export type SelectorElement<T> = T | string;
 
 export function ensureElement<T extends HTMLElement>(selectorElement: SelectorElement<T>, context?: HTMLElement): T {
