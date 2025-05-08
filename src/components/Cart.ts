@@ -35,12 +35,9 @@ export class Cart implements ICart {
 		this.events.emit('cart:changed', this._items);
 	}
 
-	removeItemFromCart(itemId: string, payload: Function | null): void {
+	removeItemFromCart(itemId: string): void {
 		this._items = this._items.filter((item) => item.id !== itemId);
 		this.events.emit('cart:changed', this._items);
-		if (payload) {
-			payload();
-		}
 	}
 
 	countTotal(): number {

@@ -21,6 +21,7 @@ export class AppApi extends Api implements IAppApi {
 				...item,
 				image: this.cdn + item.image.replace('.svg', '.png'),
 			}))
+			
 		);
 	}
 	getProductItem(id: string): Promise<IProductItem> {

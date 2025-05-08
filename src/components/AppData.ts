@@ -17,7 +17,6 @@ export class ProductItem extends Model<IProductItem> {
 // Класс, описывающий состояние приложения
 
 export class AppState extends Model<IAppState> {
-
 	// Объект заказа клиента
 	order: TOrder = {
 		items: [],
@@ -28,8 +27,11 @@ export class AppState extends Model<IAppState> {
 		phone: '',
 	};
 
+	catalog: IProductItem[];
+
 	// Объект с ошибками форм
 	formErrors: FormErrors = {};
+	payment: any;
 
 	setOrderField(field: keyof TOrderForm, value: string) {
 		this.order[field] = value;
@@ -79,4 +81,8 @@ export class AppState extends Model<IAppState> {
 		};
 	}
 
+	setCatalog(items: IProductItem[]) {
+		this.catalog = items.map((item) => new ProductItem(item, this.events));
+		this.emitChanges('items:changed', { catalog: this.catalog });
+	}
 }

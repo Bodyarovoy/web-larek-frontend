@@ -14,7 +14,7 @@ import { Page } from './components/View/Page';
 import { ProductList } from './components/ProductList';
 import { Success } from './components/View/SuccessPurchasePreview';
 import './scss/styles.scss';
-import { TOrderForm } from './types';
+import { IProductItem, TOrderForm } from './types';
 import { API_URL, CDN_URL } from './utils/constants';
 import { cloneTemplate, ensureElement } from './utils/utils';
 import { CheckoutPreview } from './components/View/CheckoutPreview';
@@ -38,11 +38,6 @@ const productList = new ProductList(events);
 const page = new Page(document.body, events);
 
 const modal = new Modal(modalContainer, events);
-// const cardPreview = new CheckoutPreview(
-// 	'checkoutPreview',
-// 	cloneTemplate(orderTemplate),
-// 	events
-// );
 const checkoutPreview = new CheckoutPreview(
 	'checkoutPreview',
 	cloneTemplate(orderTemplate),
@@ -63,27 +58,25 @@ const successPreview = new Success(
 	}
 );
 
-events.onAll(console.log)
+events.onAll(console.log);
 
 // Запрос к api для получения скиска карточек
 api
 	.getProductList()
 	.then((data) => {
 		productList.items = data;
-		events.emit(`initialData: loaded`);
+		appData.setCatalog(data);
 	})
 	.catch((error) => {
 		console.log('Ошибка при загрузке товаров:', error);
 	});
 
 // Загрузаем список карточек
-events.on(`initialData: loaded`, () => {
-	const itemsArray = productList.items.map((item) => {
-		const itemsInstant = new CardCatalog(
-			cloneTemplate(templateCardCatalog),
-			events
-		);
-		return itemsInstant.render(item);
+events.on('items:changed', (payload: { catalog: IProductItem[] }) => {
+	const items = payload.catalog;
+	const itemsArray = items.map((item) => {
+		const card = new CardCatalog(cloneTemplate(templateCardCatalog), events);
+		return card.render(item);
 	});
 	itemsContainer.replaceChildren(...itemsArray);
 	cart.items = [];
@@ -131,7 +124,6 @@ events.on('cart:changed', updateCartPreview);
 events.on('item:preview', (data: { id: string }) => {
 	page.locked = true;
 	const item = productList.getItem(data.id);
-
 	const cardPreviewElement =
 		templateCardPreview.content.firstElementChild.cloneNode(
 			true
@@ -162,19 +154,19 @@ events.on('basket:open', () => {
 
 // Событие при удалении товара из корзины
 events.on('deleteButton:click', (data: { id: string }) => {
-	cart.removeItemFromCart(data.id, () => {
-		events.emit('cart:changed');
-	});
+	cart.removeItemFromCart(data.id);
 });
 
 //Событие при нажатии кнопки Оформить в корзине
 events.on('checkoutButton:click', () => {
 	appData.order.total = cart.countTotal();
 	appData.order.items = cart.getItemIds();
+	const isValid = appData.validateOrder();
 	modal.render({
 		content: checkoutPreview.render({
-			address: '',
-			valid: false,
+			address: appData.order.address,
+			payment: appData.order.payment,
+			valid: isValid,
 			errors: [],
 		}),
 	});
@@ -199,11 +191,12 @@ events.on('orderFormErrors:change', (errors: Partial<TOrderForm>) => {
 
 // Событие при нажатии кнопки Далее в окне с заказом
 events.on(`order:submit`, () => {
+	const isValid = appData.validateOrder();
 	modal.render({
 		content: contactsPreview.render({
-			phone: '',
-			email: '',
-			valid: false,
+			phone: appData.order.phone,
+			email: appData.order.email,
+			valid: isValid,
 			errors: [],
 		}),
 	});
@@ -223,7 +216,11 @@ events.on('contacts:submit', () => {
 	api
 		.postOrder(appData.order)
 		.then((res) => {
-			events.emit('order:success', res);
+			modal.render({
+				content: successPreview.render({
+					description: res.total,
+				}),
+			});
 			cart.clearCart();
 			appData.refreshOrder();
 			contactsPreview.clear();
@@ -234,13 +231,4 @@ events.on('contacts:submit', () => {
 		.catch((err) => {
 			console.log(err);
 		});
-});
-
-// Переход на страницу с информацией об успешном заказе при нажатии кнопки Оплатить в окне с контактными данными
-events.on('order:success', (res: ApiListResponse<string>) => {
-	modal.render({
-		content: successPreview.render({
-			description: res.total,
-		}),
-	});
 });
